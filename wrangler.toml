@@ -1,0 +1,3 @@
+name = "list"   # 使用期望的名称，避免警告
+compatibility_date = "2026-02-15"
+main = "workers.js"
