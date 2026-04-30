@@ -3,6 +3,6 @@ compatibility_date = "2026-02-15"
 main = "workers.js"
 
 kv_namespaces = [
-  { binding = "DEVICE_INFO", id = "your-device-info-id" },
-  { binding = "BAN_LIST", id = "your-ban-list-id" }
+  { binding = "DEVICE_INFO", id = "5684e5fb-f55f-4f16-8074-6c070a83eb1c" },
+  { binding = "BAN_LIST", id = "c6ed3f37-db59-41fa-9eb7-c3e9d3a63ca5" }
 ]
