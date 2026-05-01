@@ -6,3 +6,6 @@ kv_namespaces = [
   { binding = "DEVICE_INFO", id = "5684e5fb-f55f-4f16-8074-6c070a83eb1c" },
   { binding = "BAN_LIST", id = "c6ed3f37-db59-41fa-9eb7-c3e9d3a63ca5" }
 ]
+
+[vars]
+ADMIN_AUTH_KEY = "你的超级密钥"
