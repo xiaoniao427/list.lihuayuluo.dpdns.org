@@ -15,6 +15,19 @@ export default {
   }
 };
 
+// 获取客户端真实 IP (优先取 x-real-ip，其次 x-forwarded-for，最后 remote address)
+function getClientIP(request) {
+  const realIp = request.headers.get('x-real-ip');
+  if (realIp) return realIp;
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  if (forwardedFor) {
+    // 如果有多个代理，取第一个 IP
+    return forwardedFor.split(',')[0].trim();
+  }
+  // 回退到连接地址
+  return request.headers.get('cf-connecting-ip') || 'unknown';
+}
+
 // 处理设备信息上传
 async function handleUpload(request, env) {
   try {
@@ -26,25 +39,29 @@ async function handleUpload(request, env) {
       return new Response('Invalid timestamp', { status: 403 });
     }
 
-    // 确保用户名不为空
-    let username = data.username || "UnknownPlayer";
+    const deviceId = data.device_id;
+    if (!deviceId) {
+      return new Response('Missing device_id', { status: 400 });
+    }
 
-    // 使用 device_id 作为主键，存储用户名和时间戳
+    // 获取客户端真实 IP
+    const clientIp = getClientIP(request);
+
+    // 存储到KV: 键为 device_id，值为 { ip, device_id, last_updated }
     const deviceData = {
-      username: username,
-      device_id: data.device_id,
+      device_id: deviceId,
+      ip: clientIp,
       last_updated: currentTime
     };
 
-    // 存储到KV (覆盖旧记录)
-    await env.DEVICE_INFO.put(data.device_id, JSON.stringify(deviceData));
+    await env.DEVICE_INFO.put(deviceId, JSON.stringify(deviceData));
     return new Response('OK');
   } catch (e) {
     return new Response('Error processing request', { status: 500 });
   }
 }
 
-// 处理黑名单检查
+// 处理黑名单检查（不变）
 async function handleBanCheck(request, env) {
   const url = new URL(request.url);
   const deviceId = url.searchParams.get('device_id');
@@ -53,19 +70,17 @@ async function handleBanCheck(request, env) {
     return new Response('Missing device_id', { status: 400 });
   }
 
-  // 检查黑名单KV
   const banned = await env.BAN_LIST.get(deviceId);
   return banned
     ? new Response('banned')
     : new Response('allowed');
 }
 
-// 处理黑名单管理
+// 处理黑名单管理（不变）
 async function handleBanManager(request, env) {
   try {
     const { action, device_id, auth_key } = await request.json();
 
-    // 从环境变量读取管理员密钥，若未设置则直接拒绝
     const adminKey = env.ADMIN_AUTH_KEY;
     if (!adminKey || auth_key !== adminKey) {
       return new Response('Unauthorized', { status: 401 });
