@@ -9,3 +9,8 @@ kv_namespaces = [
 
 [vars]
 ADMIN_AUTH_KEY = "你的超级密钥"
+
+[observability]
+[observability.logs]
+enabled = true
+invocation_logs = true
